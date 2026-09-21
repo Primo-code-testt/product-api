@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Product API
+  version: 1.0.0
+paths:
+  /product:
+    post:
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /product/{id}:
+    patch:
+      summary: Update only supplied product fields
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchProduct'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Product not found
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    CreateProduct:
+      type: object
+      required: [name, price]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: double
+          minimum: 0
+        sale_price:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+    PatchProduct:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: double
+          minimum: 0
+        sale_price:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+    Product:
+      allOf:
+        - $ref: '#/components/schemas/CreateProduct'
+        - type: object
+          required: [id, created_at, updated_at]
+          properties:
+            id:
+              type: integer
+              format: int64
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    ProductResponse:
+      type: object
+      required: [successful, error_code, data]
+      properties:
+        successful:
+          type: boolean
+          example: true
+        error_code:
+          type: string
+          example: ''
+        data:
+          $ref: '#/components/schemas/Product'
+    ErrorResponse:
+      type: object
+      required: [successful, error_code]
+      properties:
+        successful:
+          type: boolean
+          example: false
+        error_code:
+          type: string
+          example: VALIDATION_ERROR
